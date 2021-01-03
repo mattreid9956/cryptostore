@@ -39,6 +39,8 @@ class Collector(Process):
             delta = False
             timeout = timeouts.get(callback_type, 120)
             snap_interval = False
+            include_sequence_no = False
+            include_order_type = False
 
             if 'book_interval' in value:
                 window = value['book_interval']
@@ -48,6 +50,10 @@ class Collector(Process):
                 depth = value['max_depth']
             if 'snapshot_interval' in value:
                 snap_interval = value['snapshot_interval']
+            if 'include_sequence_no' in value and value['include_sequence_no']:
+                include_sequence_no = True
+            if 'include_order_type' in value and value['include_order_type']:
+                include_order_type = True
 
             if callback_type in (L2_BOOK, L3_BOOK):
                 self.exchange_config[callback_type] = self.exchange_config[callback_type]['symbols']
@@ -77,6 +83,8 @@ class Collector(Process):
                 kwargs = {'host': self.config['kafka']['ip'], 'port': self.config['kafka']['port']}
 
             if callback_type == TRADES:
+                kwargs['include_sequence_no'] = include_sequence_no
+                kwargs['include_order_type'] = include_order_type
                 cb[TRADES] = [trade_cb(**kwargs)]
             elif callback_type == LIQUIDATIONS:
                  cb[LIQUIDATIONS] = [liq_cb(**kwargs)]
@@ -85,10 +93,12 @@ class Collector(Process):
             elif callback_type == TICKER:
                 cb[TICKER] = [ticker_cb(**kwargs)]
             elif callback_type == L2_BOOK:
+                kwargs['include_sequence_no'] = include_sequence_no
                 cb[L2_BOOK] = [book_cb(key=L2_BOOK, **kwargs)]
                 if book_up:
                     cb[BOOK_DELTA] = [book_up(key=L2_BOOK, **kwargs)]
             elif callback_type == L3_BOOK:
+                kwargs['include_sequence_no'] = include_sequence_no
                 cb[L3_BOOK] = [book_cb(key=L3_BOOK, **kwargs)]
                 if book_up:
                     cb[BOOK_DELTA] = [book_up(key=L3_BOOK, **kwargs)]

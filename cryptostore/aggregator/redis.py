@@ -81,7 +81,6 @@ class Redis(Cache):
 
         return updates
 
-
     def delete(self, exchange, dtype, pair):
         key = f'{dtype}-{exchange}-{pair}'
 
