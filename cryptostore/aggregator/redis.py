@@ -94,3 +94,6 @@ class Redis(Cache):
         else:
             LOG.info("%s: Removed no Redis entries", key)
         self.ids[key] = []
+
+    def show_keys(self):
+        return self.conn.keys('*')
